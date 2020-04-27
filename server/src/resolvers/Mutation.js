@@ -1,14 +1,14 @@
-const { photos } = require('../sampleData')
-let _id = 0
-
 module.exports = {
-  postPhoto(parent, args) {
+  async postPhoto(parent, args, { db }) {
     const newPhoto = {
-      id: _id++,
       ...args.input,
       created: new Date()
     }
-    photos.push(newPhoto)
+
+    const { insertedId } = await db.collection('photos').insertOne(newPhoto)
+
+    newPhoto.id = insertedId
+
     return newPhoto
   }
 }

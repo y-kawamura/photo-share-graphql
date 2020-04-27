@@ -37,6 +37,7 @@ type Query {
   hello: String
   totalPhotos: Int!
   allPhotos: [Photo!]!
+  totalUsers: Int!
   allUsers: [User!]!
 }
 

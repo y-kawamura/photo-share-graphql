@@ -1,24 +1,43 @@
 const { GraphQLScalarType } = require('graphql')
-const { users, photos, tags } = require('../sampleData')
 
 module.exports = {
   Photo: {
-    url: (parent) => `http://penta.com/img/${parent.id}.jpg`,
-    postedBy: (parent) =>
-      users.find((user) => user.githubLogin === parent.githubUser),
-    taggedUsers: (parent) =>
-      tags
-        .filter((tag) => tag.photoId === parent.id)
-        .map((tag) => users.find((user) => user.githubLogin === tag.userId))
+    id: (parent) => parent.id || parent._id,
+
+    url: (parent) => `http://penta.com/img/${parent._id}.jpg`,
+
+    postedBy: (parent, args, { db }) =>
+      db.collection('users').findOne({ githubLogin: parent.userId }),
+
+    taggedUsers: async (parent, args, { db }) => {
+      const currentPhotoTags = await db
+        .collection('tags')
+        .find({ photoId: parent._id })
+        .toArray()
+      const githubLogins = currentPhotoTags.map((tag) => tag.githubLogin)
+
+      return db
+        .collection('users')
+        .find({ githubLogin: { $in: githubLogins } })
+        .toArray()
+    }
   },
 
   User: {
-    postedPhotos: (parent) =>
-      photos.filter((photo) => photo.githubUser === parent.githubLogin),
-    inPhotos: (parent) =>
-      tags
-        .filter((tag) => tag.userId === parent.githubLogin)
-        .map((tag) => photos.find((photo) => photo.id === tag.photoId))
+    postedPhotos: (parent, args, { db }) =>
+      db.collection('photos').find({ userId: parent.githubLogin }).toArray(),
+
+    inPhotos: async (parent, args, { db }) => {
+      const currentUserTags = await db
+        .collection('tags')
+        .find({ githubLogin: parent.githubLogin })
+        .toArray()
+      const photoIDs = currentUserTags.map((tag) => tag.photoId)
+      return db
+        .collection('photos')
+        .find({ _id: { $in: photoIDs } })
+        .toArray()
+    }
   },
 
   DateTime: new GraphQLScalarType({
