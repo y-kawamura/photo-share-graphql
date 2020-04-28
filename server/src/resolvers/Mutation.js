@@ -47,7 +47,7 @@ module.exports = {
     const {
       ops: [user]
     } = await db
-      .collection('user')
+      .collection('users')
       .replaceOne({ githubLogin: login }, latestUser, { upsert: true })
 
     return { user, token: access_token }

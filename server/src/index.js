@@ -37,7 +37,7 @@ async function start() {
     context: async ({ req }) => {
       const githubToken = req.headers.authorization
       context.currentUser = await context.db
-        .collection('user')
+        .collection('users')
         .findOne({ githubToken })
       return context
     }
