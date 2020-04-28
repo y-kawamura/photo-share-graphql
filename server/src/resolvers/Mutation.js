@@ -5,8 +5,10 @@ module.exports = {
     if (!currentUser) {
       throw new Error('only an authorized user can post a photo')
     }
+
     const newPhoto = {
       ...args.input,
+      userId: currentUser.githubLogin,
       created: new Date()
     }
 
