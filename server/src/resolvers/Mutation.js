@@ -1,3 +1,4 @@
+const fetch = require('node-fetch')
 const { authorizeWithGitHub } = require('../lib')
 
 module.exports = {
@@ -53,5 +54,36 @@ module.exports = {
       .replaceOne({ githubLogin: login }, latestUser, { upsert: true })
 
     return { user, token: access_token }
+  },
+
+  async addFakeUsers(parent, { count }, { db }) {
+    console.log(count)
+    const randomUserApi = `https://randomuser.me/api?results=${count}`
+    const { results } = await fetch(randomUserApi)
+      .then((res) => res.json())
+      .catch((err) => {
+        throw new Error(err)
+      })
+
+    const users = results.map((r) => ({
+      githubLogin: r.login.username,
+      githubToken: r.login.sha1,
+      name: `${r.name.first} ${r.name.last}`,
+      avatar: r.picture.thumbnail
+    }))
+
+    await db.collection('users').insert(users)
+
+    return users
+  },
+
+  async fakeUserAuth(parent, { githubLogin }, { db }) {
+    const user = await db.collection('users').findOne({ githubLogin })
+
+    if (!user) {
+      throw new Error(`Cannot find user with githubLogin ${githubLogin}`)
+    }
+
+    return { user, token: user.githubToken }
   }
 }
