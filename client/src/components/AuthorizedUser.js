@@ -48,9 +48,14 @@ class AuthorizedUser extends Component {
 
   logout = () => {
     localStorage.removeItem('token')
-    let data = this.props.client.readQuery({ query: ROOT_QUERY })
-    data.me = null
-    this.props.client.writeQuery({ query: ROOT_QUERY, data })
+    const data = this.props.client.readQuery({ query: ROOT_QUERY })
+    this.props.client.writeQuery({
+      query: ROOT_QUERY,
+      data: {
+        ...data,
+        me: null
+      }
+    })
   }
 
   componentDidMount() {
