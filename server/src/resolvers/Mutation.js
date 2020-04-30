@@ -2,7 +2,7 @@ const fetch = require('node-fetch')
 const { authorizeWithGitHub } = require('../lib')
 
 module.exports = {
-  async postPhoto(parent, args, { currentUser, db }) {
+  async postPhoto(parent, args, { currentUser, db, pubsub }) {
     if (!currentUser) {
       throw new Error('only an authorized user can post a photo')
     }
@@ -17,10 +17,12 @@ module.exports = {
 
     newPhoto.id = insertedId
 
+    pubsub.publish('photo-added', { newPhoto })
+
     return newPhoto
   },
 
-  async githubAuth(parent, { code }, { db }) {
+  async githubAuth(parent, { code }, { db, pubsub }) {
     // 1. Get user information from GitHub
     const {
       message,
@@ -48,16 +50,18 @@ module.exports = {
     }
 
     const {
-      ops: [user]
+      ops: [user],
+      result
     } = await db
       .collection('users')
       .replaceOne({ githubLogin: login }, latestUser, { upsert: true })
 
+    result.upserted && pubsub.publish('user-added', { newUser: user })
+
     return { user, token: access_token }
   },
 
-  async addFakeUsers(parent, { count }, { db }) {
-    console.log(count)
+  async addFakeUsers(parent, { count }, { db, pubsub }) {
     const randomUserApi = `https://randomuser.me/api?results=${count}`
     const { results } = await fetch(randomUserApi)
       .then((res) => res.json())
@@ -72,7 +76,11 @@ module.exports = {
       avatar: r.picture.thumbnail
     }))
 
-    await db.collection('users').insert(users)
+    await db.collection('users').insertMany(users)
+
+    users.forEach((user) => {
+      pubsub.publish('user-added', { newUser: user })
+    })
 
     return users
   },
