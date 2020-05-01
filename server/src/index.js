@@ -43,6 +43,9 @@ async function start() {
         onCost: (cost) => console.log('query cost: ', cost)
       })
     ],
+    engine: {
+      apiKey: process.env.APOLLO_ENGINE_API_KEY
+    },
     context: async ({ req, connection }) => {
       const githubToken = req
         ? req.headers.authorization
