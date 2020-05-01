@@ -5,17 +5,12 @@ import App from './App'
 import * as serviceWorker from './serviceWorker'
 
 import { ApolloProvider } from 'react-apollo'
-import {
-  InMemoryCache,
-  HttpLink,
-  ApolloLink,
-  ApolloClient,
-  split
-} from 'apollo-boost'
+import { InMemoryCache, ApolloLink, ApolloClient, split } from 'apollo-boost'
 import { WebSocketLink } from 'apollo-link-ws'
 import { persistCache } from 'apollo-cache-persist'
 import { getMainDefinition } from 'apollo-utilities'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { createUploadLink } from 'apollo-upload-client'
 
 // cache
 const cache = new InMemoryCache()
@@ -30,7 +25,7 @@ if (localStorage['apollo-cache-persist']) {
 }
 
 // link
-const httpLink = new HttpLink({ uri: 'http://localhost:4000/graphql' })
+const httpLink = createUploadLink({ uri: 'http://localhost:4000/graphql' })
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext((context) => ({
     headers: {

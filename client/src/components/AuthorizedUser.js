@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { withRouter } from 'react-router-dom'
+import { withRouter, NavLink } from 'react-router-dom'
 import { gql } from 'apollo-boost'
 import { Mutation, Query, withApollo } from 'react-apollo'
 import { ROOT_QUERY } from '../App'
@@ -34,6 +34,7 @@ const CurrentUser = ({ name, avatar, logout }) => (
     <img src={avatar} alt={name} widht='48' height='48' />
     <h1>{name}</h1>
     <button onClick={logout}>Logout</button>
+    <NavLink to='/newPhoto'>Post Photo</NavLink>
   </div>
 )
 
