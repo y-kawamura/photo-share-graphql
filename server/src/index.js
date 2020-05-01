@@ -52,6 +52,8 @@ async function start() {
 
   app.get('/playground', expressPlayground({ endpoint: '/graphql' }))
 
+  app.use('/img/photos', express.static(__dirname.concat('/assets/photo')))
+
   const httpServer = createServer(app)
   server.installSubscriptionHandlers(httpServer)
   httpServer.timeout = 5000
