@@ -4,6 +4,7 @@ const { readFileSync } = require('fs')
 const { ApolloServer, gql, PubSub } = require('apollo-server-express')
 const { createServer } = require('http')
 const resolvers = require('./resolvers')
+const depthLimit = require('graphql-depth-limit')
 const expressPlayground = require('graphql-playground-middleware-express')
   .default
 
@@ -35,6 +36,7 @@ async function start() {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
+    validationRules: [depthLimit(5)],
     context: async ({ req, connection }) => {
       const githubToken = req
         ? req.headers.authorization
